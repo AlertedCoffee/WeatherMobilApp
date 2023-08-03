@@ -15,14 +15,14 @@ import java.util.Scanner;
 
 public class GetWeather extends AsyncTask <URL, String, String> {
 
-    public interface AsyncResponse{
+    public interface AsyncResponses{
         void processFinished(String output);
         void processError(String error);
     }
 
-    public AsyncResponse response;
+    public AsyncResponses response;
 
-    public GetWeather (AsyncResponse response){
+    public GetWeather (AsyncResponses response){
         this.response = response;
     }
 
@@ -46,15 +46,14 @@ public class GetWeather extends AsyncTask <URL, String, String> {
     }
 
     private static final String TAG = "GetWeather";
+
     @Override
     protected void onPreExecute() {
         Log.d(TAG, "onPreExecute: called");
-        super.onPreExecute();
     }
 
     @Override
     protected void onProgressUpdate(String... values) {
-        super.onProgressUpdate(values);
         response.processError(values[0]);
     }
 
@@ -73,7 +72,6 @@ public class GetWeather extends AsyncTask <URL, String, String> {
 
     @Override
     protected void onPostExecute(String result) {
-        Log.d(TAG, "onPostExecute: called, ");
         response.processFinished(result);
     }
 }
