@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Погода</string>
+    <string name="connection_error">Ошибка подключения</string>
+</resources>
