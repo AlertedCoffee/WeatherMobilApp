@@ -2,5 +2,6 @@
     <string name="app_name">Погода</string>
     <string name="connection_error">Ошибка подключения</string>
     <string name="error404">Город не найден</string>
+    <string name="default_error">Произошла какая-то шляпа</string>
     <string name="lang">ru</string>
 </resources>

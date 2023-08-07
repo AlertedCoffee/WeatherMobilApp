@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         swipeRefreshLayout.setOnRefreshListener(this);
-        swipeRefreshLayout.setColorSchemeColors(Color.RED, Color.BLUE);
+        swipeRefreshLayout.setColorSchemeColors(Color.RED, Color.rgb(138, 43, 226));
 
         settings = getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE);
         city = settings.getString(APP_PREFERENCES_CITY, "Москва");
@@ -91,8 +91,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
     @Override
     public void onRefresh() {
-        Log.i(TAG, "onRefresh called from SwipeRefreshLayout");
-
         new GetWeather(this).execute(urlBuilder(city));
     }
 
@@ -150,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
 
             Locale locale = new Locale("ru", "RU");
-            SimpleDateFormat format = new SimpleDateFormat("HH.mm.ss", locale);
+            SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss", locale);
             String dateString = format.format(new Date(Long.parseLong(sys.getString("sunrise")) * 1000));
             sunrise.setText(dateString);
 
@@ -206,6 +204,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             case "404":
                 Toast.makeText(this, R.string.error404, Toast.LENGTH_SHORT).show();
             default:
+                Toast.makeText(this, R.string.default_error, Toast.LENGTH_SHORT).show();
                 break;
         }
     }
