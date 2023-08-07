@@ -1,38 +1,33 @@
 package com.example.weather;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.Uri;
-import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.sql.Date;
-import java.sql.Timestamp;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.Locale;
-import java.util.TimeZone;
+import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements GetWeather.AsyncResponses {
+public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener, GetWeather.AsyncResponses {
 
     private static final String TAG = "MainActivity";
 
@@ -43,29 +38,24 @@ public class MainActivity extends AppCompatActivity implements GetWeather.AsyncR
     private TextView wind;
     private TextView sunrise;
     private TextView sunset;
+    private ImageView image;
 
     private String city;
     public static final String APP_PREFERENCES = "settings";
     public static final String APP_PREFERENCES_CITY = "city";
     private SharedPreferences settings;
 
+    private SwipeRefreshLayout swipeRefreshLayout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        townName = findViewById(R.id.townNameTextView);
-        description = findViewById(R.id.weatherValueTextView);
-        temp = findViewById(R.id.tempValueTextView);
-        feelsTemp = findViewById(R.id.feelsTempValueTextView);
-        wind = findViewById(R.id.windSpeedValueTextView);
-        sunrise = findViewById(R.id.sunriseValueTextView);
-        sunset = findViewById(R.id.sunsetValueTextView);
-
-        settings = getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE);
-        city = settings.getString(APP_PREFERENCES_CITY, "Москва");
+        initComponents();
 
         //URL url = new URL("https://api.openweathermap.org/data/2.5/weather?q=Копорье&appid=f38e5ba35d6cb5b542711ce044c35e01&units=metric&lang=ru");
+        swipeRefreshLayout.setRefreshing(true);
         new GetWeather(this).execute(urlBuilder(city));
 
 
@@ -79,6 +69,31 @@ public class MainActivity extends AppCompatActivity implements GetWeather.AsyncR
             }
             return false;
         });
+    }
+
+    private void initComponents(){
+        townName = findViewById(R.id.townNameTextView);
+        description = findViewById(R.id.weatherValueTextView);
+        temp = findViewById(R.id.tempValueTextView);
+        feelsTemp = findViewById(R.id.feelsTempValueTextView);
+        wind = findViewById(R.id.windSpeedValueTextView);
+        sunrise = findViewById(R.id.sunriseValueTextView);
+        sunset = findViewById(R.id.sunsetValueTextView);
+        image = findViewById(R.id.imageView);
+
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+        swipeRefreshLayout.setOnRefreshListener(this);
+        swipeRefreshLayout.setColorSchemeColors(Color.RED, Color.BLUE);
+
+        settings = getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE);
+        city = settings.getString(APP_PREFERENCES_CITY, "Москва");
+    }
+
+    @Override
+    public void onRefresh() {
+        Log.i(TAG, "onRefresh called from SwipeRefreshLayout");
+
+        new GetWeather(this).execute(urlBuilder(city));
     }
 
 
@@ -114,6 +129,8 @@ public class MainActivity extends AppCompatActivity implements GetWeather.AsyncR
     @Override
     public void processFinished(String output){
         Log.d(TAG, "processFinished: " + output);
+
+        swipeRefreshLayout.setRefreshing(false);
         if (output == null) return;
         try {
             JSONObject jsonResult = new JSONObject(output);
@@ -140,12 +157,43 @@ public class MainActivity extends AppCompatActivity implements GetWeather.AsyncR
             dateString = format.format(new Date(Long.parseLong(sys.getString("sunset")) * 1000));
             sunset.setText(dateString);
 
+            try {
+                image.setImageResource(getIcon(weather.getString("icon")));
+            }
+            catch (NullPointerException e){
+                e.printStackTrace();
+                image.setImageResource(R.drawable.r01d);
+            }
 
         }
         catch (JSONException e){
             e.printStackTrace();
         }
 
+    }
+
+    private int getIcon(String name) throws NullPointerException{
+        Map<String, Integer> icons = new HashMap<>();
+        icons.put("01d", R.drawable.r01d);
+        icons.put("01n", R.drawable.r01n);
+        icons.put("02d", R.drawable.r02d);
+        icons.put("02n", R.drawable.r02n);
+        icons.put("03d", R.drawable.r03d);
+        icons.put("03n", R.drawable.r03n);
+        icons.put("04d", R.drawable.r04d);
+        icons.put("04n", R.drawable.r04n);
+        icons.put("09d", R.drawable.r09d);
+        icons.put("09n", R.drawable.r09n);
+        icons.put("10d", R.drawable.r10d);
+        icons.put("10n", R.drawable.r10n);
+        icons.put("11d", R.drawable.r11d);
+        icons.put("11n", R.drawable.r11n);
+        icons.put("13d", R.drawable.r13d);
+        icons.put("13n", R.drawable.r13n);
+        icons.put("50d", R.drawable.r50d);
+        icons.put("50n", R.drawable.r50n);
+
+        return icons.get(name);
     }
 
     @Override
