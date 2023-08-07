@@ -2,6 +2,8 @@ package com.example.weather;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
@@ -34,15 +36,18 @@ public class MainActivity extends AppCompatActivity implements GetWeather.AsyncR
 
     private static final String TAG = "MainActivity";
 
-    TextView townName;
-    TextView description;
-    TextView temp;
-    TextView feelsTemp;
-    TextView wind;
-    TextView sunrise;
-    TextView sunset;
+    private TextView townName;
+    private TextView description;
+    private TextView temp;
+    private TextView feelsTemp;
+    private TextView wind;
+    private TextView sunrise;
+    private TextView sunset;
 
-    String city = "Москва";
+    private String city;
+    public static final String APP_PREFERENCES = "settings";
+    public static final String APP_PREFERENCES_CITY = "city";
+    private SharedPreferences settings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +61,9 @@ public class MainActivity extends AppCompatActivity implements GetWeather.AsyncR
         wind = findViewById(R.id.windSpeedValueTextView);
         sunrise = findViewById(R.id.sunriseValueTextView);
         sunset = findViewById(R.id.sunsetValueTextView);
+
+        settings = getSharedPreferences(APP_PREFERENCES, Context.MODE_PRIVATE);
+        city = settings.getString(APP_PREFERENCES_CITY, "Москва");
 
         //URL url = new URL("https://api.openweathermap.org/data/2.5/weather?q=Копорье&appid=f38e5ba35d6cb5b542711ce044c35e01&units=metric&lang=ru");
         new GetWeather(this).execute(urlBuilder(city));
@@ -152,5 +160,21 @@ public class MainActivity extends AppCompatActivity implements GetWeather.AsyncR
             default:
                 break;
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (settings.contains(APP_PREFERENCES_CITY)) {
+            city = settings.getString(APP_PREFERENCES_CITY, "Москва");
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString(APP_PREFERENCES_CITY, city).apply();
     }
 }
