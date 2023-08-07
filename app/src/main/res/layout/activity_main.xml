@@ -9,11 +9,12 @@
     tools:context=".MainActivity">
 
     <EditText
+        android:id="@+id/town_search"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="18sp"
-        android:hint="Введите город"
-        android:enabled="false"/>
+        android:singleLine="true"
+        android:hint="Введите город" />
 
 
     <ImageView
@@ -150,7 +151,6 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginTop="15dp"
-                android:text="Ты ♥"
                 android:textSize="18sp" />
 
             <TextView

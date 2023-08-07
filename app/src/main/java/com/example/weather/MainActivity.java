@@ -2,9 +2,16 @@ package com.example.weather;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.net.Uri;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -13,6 +20,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Text;
 
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -32,6 +41,9 @@ public class MainActivity extends AppCompatActivity implements GetWeather.AsyncR
     TextView wind;
     TextView sunrise;
     TextView sunset;
+
+    String city = "Москва";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,19 +57,56 @@ public class MainActivity extends AppCompatActivity implements GetWeather.AsyncR
         sunrise = findViewById(R.id.sunriseValueTextView);
         sunset = findViewById(R.id.sunsetValueTextView);
 
+        //URL url = new URL("https://api.openweathermap.org/data/2.5/weather?q=Копорье&appid=f38e5ba35d6cb5b542711ce044c35e01&units=metric&lang=ru");
+        new GetWeather(this).execute(urlBuilder(city));
+
+
+        final EditText townSearch = (EditText) findViewById(R.id.town_search);
+        townSearch.setOnKeyListener((v, kayCode, event) -> {
+            if(event.getAction() == KeyEvent.ACTION_DOWN && kayCode == KeyEvent.KEYCODE_ENTER)
+            {
+                city = townSearch.getText().toString().trim();
+                new GetWeather(this).execute(urlBuilder(city));
+                return true;
+            }
+            return false;
+        });
+    }
+
+
+    private URL urlBuilder (String city){
+        String BASE_URL = "https://api.openweathermap.org/data/2.5/weather";
+        String PARAM_CITY = "q";
+        String PARAM_APPID = "appid";
+        String appID = "f38e5ba35d6cb5b542711ce044c35e01";
+        String PARAM_UNITS = "units";
+        String units = "metric";
+        String PARAM_LANG = "lang";
+        String lang = getString(R.string.lang);
+
+        Uri builtUri = Uri.parse(BASE_URL).buildUpon()
+                .appendQueryParameter(PARAM_CITY, city)
+                .appendQueryParameter(PARAM_APPID, appID)
+                .appendQueryParameter(PARAM_UNITS, units)
+                .appendQueryParameter(PARAM_LANG, lang)
+                .build();
+
+        URL url = null;
 
         try {
-            URL url = new URL("https://api.openweathermap.org/data/2.5/weather?q=Москва&appid=f38e5ba35d6cb5b542711ce044c35e01&units=metric&lang=ru");
-            new GetWeather(this).execute(url);
+            url = new URL (builtUri.toString());
         }
-        catch (Exception e){
+        catch (MalformedURLException e){
             e.printStackTrace();
         }
+
+        return url;
     }
 
     @Override
     public void processFinished(String output){
         Log.d(TAG, "processFinished: " + output);
+        if (output == null) return;
         try {
             JSONObject jsonResult = new JSONObject(output);
             JSONArray jsonArray = (JSONArray) jsonResult.get("weather");
@@ -98,6 +147,8 @@ public class MainActivity extends AppCompatActivity implements GetWeather.AsyncR
             case "Unable to resolve host \"api.openweathermap.org\": No address associated with hostname":
                 Toast.makeText(this, R.string.connection_error, Toast.LENGTH_SHORT).show();
                 break;
+            case "404":
+                Toast.makeText(this, R.string.error404, Toast.LENGTH_SHORT).show();
             default:
                 break;
         }

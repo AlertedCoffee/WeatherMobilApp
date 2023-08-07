@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.accessibility.AccessibilityManager;
 import android.widget.Toast;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -62,6 +63,10 @@ public class GetWeather extends AsyncTask <URL, String, String> {
         String result = null;
         try {
             result = getResponse(url[0]);
+        }
+        catch (FileNotFoundException e){
+            e.printStackTrace();
+            publishProgress("404");
         }
         catch (IOException e){
             e.printStackTrace();
